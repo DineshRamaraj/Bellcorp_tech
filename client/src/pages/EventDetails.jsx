@@ -84,14 +84,21 @@ const EventDetails = () => {
         <div className="pt-24 min-h-screen bg-[#FAFAF9] text-slate-800">
             <div className="max-w-5xl mx-auto px-6 lg:px-8 pb-20">
                 <div className="bg-white rounded-[2.5rem] overflow-hidden shadow-[0_30px_60px_rgb(0,0,0,0.06)] border border-stone-100">
-                    {/* Header Banner - Soft Gradient */}
-                    <div className={`h-80 w-full bg-gradient-to-r ${getGradient(event.category)} relative flex items-end p-10 md:p-14`}>
-                        <div className="absolute inset-0 bg-white/10 mix-blend-overlay"></div>
+                    {/* Header Banner - Image Background */}
+                    <div className="h-80 w-full relative flex items-end p-10 md:p-14">
+                        <div className="absolute inset-0">
+                            <img
+                                src={event.image || "https://images.unsplash.com/photo-1492684223066-81342ee5ff30"}
+                                alt={event.name}
+                                className="w-full h-full object-cover"
+                            />
+                            <div className="absolute inset-0 bg-gradient-to-t from-slate-900/90 via-slate-900/50 to-transparent"></div>
+                        </div>
                         <div className="relative z-10 w-full">
-                            <span className="inline-block bg-white/80 backdrop-blur-sm text-slate-800 text-xs font-bold px-4 py-1.5 rounded-full mb-6 shadow-sm border border-white/50">
+                            <span className="inline-block bg-white/20 backdrop-blur-md text-white text-xs font-bold px-4 py-1.5 rounded-full mb-6 shadow-sm border border-white/30">
                                 {event.category}
                             </span>
-                            <h1 className="text-4xl md:text-5xl font-extrabold text-slate-800 mb-2 drop-shadow-sm">{event.name}</h1>
+                            <h1 className="text-4xl md:text-5xl font-extrabold text-white mb-2 drop-shadow-md">{event.name}</h1>
                         </div>
                     </div>
 
@@ -145,10 +152,10 @@ const EventDetails = () => {
                                         onClick={handleRegister}
                                         disabled={isRegistering || isRegistered || isPastEvent}
                                         className={`w-full py-4 rounded-xl font-bold text-lg shadow-lg transition-all duration-300 transform hover:-translate-y-1 ${isPastEvent
-                                                ? 'bg-stone-200 text-stone-500 cursor-not-allowed shadow-none'
-                                                : user
-                                                    ? (isRegistered ? 'bg-stone-200 text-stone-500 cursor-not-allowed shadow-none' : 'bg-slate-900 hover:bg-slate-800 text-white shadow-slate-900/20')
-                                                    : 'bg-stone-200 hover:bg-stone-300 text-stone-600'
+                                            ? 'bg-stone-200 text-stone-500 cursor-not-allowed shadow-none'
+                                            : user
+                                                ? (isRegistered ? 'bg-stone-200 text-stone-500 cursor-not-allowed shadow-none' : 'bg-slate-900 hover:bg-slate-800 text-white shadow-slate-900/20')
+                                                : 'bg-stone-200 hover:bg-stone-300 text-stone-600'
                                             } ${isRegistering ? 'opacity-80 cursor-not-allowed' : ''}`}
                                     >
                                         {isRegistering

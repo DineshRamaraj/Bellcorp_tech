@@ -7,17 +7,25 @@ const EventDiscovery = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [category, setCategory] = useState('');
     const [loading, setLoading] = useState(true);
+    const [page, setPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
 
     const fetchEvents = async () => {
         try {
             setLoading(true);
-            const params = {};
+            const params = { page, limit: 9 };
             if (searchTerm) params.search = searchTerm;
             if (category) params.category = category;
 
             const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/events`, { params });
             // Ensure data is always an array
-            setEvents(Array.isArray(res.data) ? res.data : []);
+            if (res.data.data) {
+                setEvents(res.data.data);
+                setTotalPages(res.data.totalPages);
+            } else {
+                setEvents(Array.isArray(res.data) ? res.data : []);
+                setTotalPages(1);
+            }
         } catch (error) {
             console.error(error);
         } finally {
@@ -31,7 +39,7 @@ const EventDiscovery = () => {
         }, 500); // Debounce delay 500ms
 
         return () => clearTimeout(delayDebounceFn);
-    }, [searchTerm, category]);
+    }, [searchTerm, category, page]);
 
     return (
         <div className="pt-20 min-h-screen bg-[#FAFAF9] text-slate-800">
@@ -54,14 +62,14 @@ const EventDiscovery = () => {
                                 type="text"
                                 placeholder="Search events, locations..."
                                 value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
+                                onChange={(e) => { setSearchTerm(e.target.value); setPage(1); }}
                                 className="w-full bg-stone-50 border border-stone-200 text-slate-800 rounded-xl px-5 py-4 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all font-medium placeholder-slate-400"
                             />
                         </div>
                         <div className="flex-1">
                             <select
                                 value={category}
-                                onChange={(e) => setCategory(e.target.value)}
+                                onChange={(e) => { setCategory(e.target.value); setPage(1); }}
                                 className="w-full bg-stone-50 border border-stone-200 text-slate-800 rounded-xl px-5 py-4 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all font-medium appearance-none"
                             >
                                 <option value="">All Categories</option>
@@ -96,9 +104,14 @@ const EventDiscovery = () => {
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
                         {events.map(event => (
                             <div key={event._id} className="group bg-white rounded-3xl overflow-hidden border border-stone-100 hover:border-stone-200 transition-all duration-500 hover:shadow-[0_20px_50px_rgb(0,0,0,0.08)] hover:-translate-y-2">
-                                {/* Placeholder Image with Gradient */}
-                                <div className={`h-48 w-full bg-gradient-to-br ${getGradient(event.category)} relative overflow-hidden`}>
-                                    <div className="absolute inset-0 bg-black/5 opacity-0 group-hover:opacity-10 transition-opacity duration-300"></div>
+                                {/* Event Image */}
+                                <div className={`h-48 w-full relative overflow-hidden`}>
+                                    <img
+                                        src={event.image || "https://images.unsplash.com/photo-1492684223066-81342ee5ff30"}
+                                        alt={event.name}
+                                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                                    />
+                                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
                                     <div className="absolute bottom-4 left-4 z-10 w-full">
                                         <span className="inline-block bg-white/90 backdrop-blur-sm text-slate-800 text-xs font-bold px-3 py-1.5 rounded-full shadow-sm">
                                             {event.category}
@@ -147,8 +160,37 @@ const EventDiscovery = () => {
                         ))}
                     </div>
                 )}
+
+                {/* Pagination Controls */}
+                {!loading && totalPages > 1 && (
+                    <div className="flex justify-center items-center mt-16 space-x-2">
+                        <button
+                            onClick={() => setPage(prev => Math.max(prev - 1, 1))}
+                            disabled={page === 1}
+                            className={`px-4 py-2 rounded-lg font-medium border ${page === 1 ? 'bg-stone-50 text-stone-300 border-stone-200 cursor-not-allowed' : 'bg-white text-slate-600 border-stone-200 hover:bg-stone-50 hover:border-stone-300'}`}
+                        >
+                            Previous
+                        </button>
+                        {[...Array(totalPages)].map((_, i) => (
+                            <button
+                                key={i}
+                                onClick={() => setPage(i + 1)}
+                                className={`w-10 h-10 rounded-lg font-medium border ${page === i + 1 ? 'bg-slate-900 text-white border-slate-900' : 'bg-white text-slate-600 border-stone-200 hover:bg-stone-50 hover:border-stone-300'}`}
+                            >
+                                {i + 1}
+                            </button>
+                        ))}
+                        <button
+                            onClick={() => setPage(prev => Math.min(prev + 1, totalPages))}
+                            disabled={page === totalPages}
+                            className={`px-4 py-2 rounded-lg font-medium border ${page === totalPages ? 'bg-stone-50 text-stone-300 border-stone-200 cursor-not-allowed' : 'bg-white text-slate-600 border-stone-200 hover:bg-stone-50 hover:border-stone-300'}`}
+                        >
+                            Next
+                        </button>
+                    </div>
+                )}
             </div>
-        </div>
+        </div >
     );
 };
 

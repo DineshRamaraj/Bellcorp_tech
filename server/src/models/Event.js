@@ -12,6 +12,10 @@ const eventSchema = new mongoose.Schema({
         required: [true, 'Please add a description'],
         maxlength: [500, 'Description can not be more than 500 characters']
     },
+    image: {
+        type: String,
+        default: 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30' // Default generic event image
+    },
     date: {
         type: Date,
         required: true

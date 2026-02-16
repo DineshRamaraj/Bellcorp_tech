@@ -19,8 +19,43 @@ const getEvents = async (req, res) => {
             query.location = { $regex: location, $options: 'i' };
         }
 
-        const events = await Event.find(query).sort({ date: 1 });
-        res.status(200).json(events);
+        // Pagination
+        const page = parseInt(req.query.page, 10) || 1;
+        const limit = parseInt(req.query.limit, 10) || 9; // Default 9 events per page
+        const startIndex = (page - 1) * limit;
+        const endIndex = page * limit;
+        const total = await Event.countDocuments(query);
+
+        const events = await Event.find(query)
+            .sort({ date: 1 })
+            .skip(startIndex)
+            .limit(limit);
+
+        // Pagination result
+        const pagination = {};
+
+        if (endIndex < total) {
+            pagination.next = {
+                page: page + 1,
+                limit
+            };
+        }
+
+        if (startIndex > 0) {
+            pagination.prev = {
+                page: page - 1,
+                limit
+            };
+        }
+
+        res.status(200).json({
+            count: events.length,
+            total,
+            totalPages: Math.ceil(total / limit),
+            currentPage: page,
+            pagination,
+            data: events
+        });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }

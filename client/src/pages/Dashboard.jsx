@@ -47,9 +47,18 @@ const Dashboard = () => {
                     {items.map(reg => (
                         <div key={reg._id} className="bg-white rounded-3xl p-6 border border-stone-100 shadow-[0_10px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_20px_40px_rgb(0,0,0,0.08)] transition-all hover:border-blue-100 group">
                             <div className="flex justify-between items-start mb-6">
-                                <div>
-                                    <h3 className="text-xl font-bold text-slate-900 mb-1 group-hover:text-blue-600 transition-colors">{reg.event.name}</h3>
-                                    <p className="text-sm text-slate-500 font-medium">{reg.event.location}</p>
+                                <div className="flex gap-4 items-center">
+                                    <div className="h-16 w-16 rounded-xl overflow-hidden shrink-0">
+                                        <img
+                                            src={reg.event.image || "https://images.unsplash.com/photo-1492684223066-81342ee5ff30"}
+                                            alt={reg.event.name}
+                                            className="w-full h-full object-cover"
+                                        />
+                                    </div>
+                                    <div>
+                                        <h3 className="text-xl font-bold text-slate-900 mb-1 group-hover:text-blue-600 transition-colors">{reg.event.name}</h3>
+                                        <p className="text-sm text-slate-500 font-medium">{reg.event.location}</p>
+                                    </div>
                                 </div>
                                 <span className={`px-3 py-1 rounded-full text-xs font-bold border ${new Date(reg.event.date) > now ? 'bg-green-50 text-green-600 border-green-100' : 'bg-stone-100 text-stone-500 border-stone-200'}`}>
                                     {new Date(reg.event.date) > now ? 'Upcoming' : 'Completed'}
