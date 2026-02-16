@@ -6,13 +6,16 @@ const EventDiscovery = () => {
     const [events, setEvents] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [category, setCategory] = useState('');
-    const [loading, setLoading] = useState(true);
+    const [isInitialLoading, setIsInitialLoading] = useState(true);
+    const [isFetching, setIsFetching] = useState(false);
     const [page, setPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
+    const [lastRetrieved, setLastRetrieved] = useState(null);
 
     const fetchEvents = async () => {
         try {
-            setLoading(true);
+            if (events.length === 0) setIsInitialLoading(true);
+            setIsFetching(true);
             const params = { page, limit: 9 };
             if (searchTerm) params.search = searchTerm;
             if (category) params.category = category;
@@ -26,10 +29,12 @@ const EventDiscovery = () => {
                 setEvents(Array.isArray(res.data) ? res.data : []);
                 setTotalPages(1);
             }
+            setLastRetrieved(new Date());
         } catch (error) {
             console.error(error);
         } finally {
-            setLoading(false);
+            setIsInitialLoading(false);
+            setIsFetching(false);
         }
     };
 
@@ -92,7 +97,7 @@ const EventDiscovery = () => {
                     Upcoming Events
                 </h2>
 
-                {loading ? (
+                {isInitialLoading ? (
                     <div className="flex justify-center items-center h-64">
                         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-600"></div>
                     </div>
@@ -161,8 +166,18 @@ const EventDiscovery = () => {
                     </div>
                 )}
 
+                {/* Loading Components Overlay */}
+                {isFetching && !isInitialLoading && (
+                    <div className="fixed inset-0 bg-white/50 backdrop-blur-sm z-50 flex justify-center items-center">
+                        <div className="bg-white p-6 rounded-2xl shadow-xl border border-stone-100 flex flex-col items-center">
+                            <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-blue-600 mb-3"></div>
+                            <p className="text-slate-500 font-medium">Updating events...</p>
+                        </div>
+                    </div>
+                )}
+
                 {/* Pagination Controls */}
-                {!loading && totalPages > 1 && (
+                {!isInitialLoading && totalPages > 1 && (
                     <div className="flex justify-center items-center mt-16 space-x-2">
                         <button
                             onClick={() => setPage(prev => Math.max(prev - 1, 1))}
@@ -187,6 +202,14 @@ const EventDiscovery = () => {
                         >
                             Next
                         </button>
+                    </div>
+                )}
+
+                {lastRetrieved && (
+                    <div className="mt-8 text-center">
+                        <p className="text-xs text-slate-400 font-medium">
+                            Last updated: {lastRetrieved.toLocaleTimeString()}
+                        </p>
                     </div>
                 )}
             </div>
