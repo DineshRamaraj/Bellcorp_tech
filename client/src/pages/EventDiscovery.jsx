@@ -15,8 +15,9 @@ const EventDiscovery = () => {
             if (location) params.location = location;
             if (category) params.category = category;
 
-            const res = await axios.get('http://localhost:5000/api/events', { params });
-            setEvents(res.data);
+            const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/events`, { params });
+            // Ensure data is always an array
+            setEvents(Array.isArray(res.data) ? res.data : []);
         } catch (error) {
             console.error(error);
         } finally {

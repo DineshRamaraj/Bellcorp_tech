@@ -10,10 +10,10 @@ const Dashboard = () => {
         const fetchRegistrations = async () => {
             try {
                 const token = localStorage.getItem('token');
-                const res = await axios.get('http://localhost:5000/api/events/my/registrations', {
+                const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/events/my/registrations`, {
                     headers: { Authorization: `Bearer ${token}` }
                 });
-                setRegistrations(res.data);
+                setRegistrations(Array.isArray(res.data) ? res.data : []);
             } catch (error) {
                 console.error(error);
             } finally {

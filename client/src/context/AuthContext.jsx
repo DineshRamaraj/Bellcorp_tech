@@ -18,17 +18,17 @@ export const AuthProvider = ({ children }) => {
                     if (decoded.exp * 1000 < Date.now()) {
                         logout();
                     } else {
-                        // Optionally fetch updated user data from backend
-                        // const res = await axios.get('http://localhost:5000/api/auth/me', {
-                        //     headers: { Authorization: `Bearer ${token}` }
-                        // });
-                        // setUser(res.data);
-
-                        // For now just set user from token/localstorage to save a request or use a simple object
-                        setUser({
-                            id: decoded.id,
-                            token: token
-                        });
+                        // Fetch user data from backend to get name and other details
+                        try {
+                            const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/auth/me`, {
+                                headers: { Authorization: `Bearer ${token}` }
+                            });
+                            setUser({ ...res.data, token });
+                        } catch (error) {
+                            console.error('Error fetching user:', error);
+                            // If fetching user fails (e.g. user deleted), logout
+                            logout();
+                        }
                     }
                 } catch (error) {
                     logout();
@@ -42,7 +42,7 @@ export const AuthProvider = ({ children }) => {
 
     const login = async (email, password) => {
         try {
-            const res = await axios.post('http://localhost:5000/api/auth/login', { email, password });
+            const res = await axios.post(`${import.meta.env.VITE_API_URL}/api/auth/login`, { email, password });
             localStorage.setItem('token', res.data.token);
             setUser(res.data);
             return { success: true };
@@ -53,7 +53,7 @@ export const AuthProvider = ({ children }) => {
 
     const register = async (name, email, password) => {
         try {
-            const res = await axios.post('http://localhost:5000/api/auth/register', { name, email, password });
+            const res = await axios.post(`${import.meta.env.VITE_API_URL}/api/auth/register`, { name, email, password });
             localStorage.setItem('token', res.data.token);
             setUser(res.data);
             return { success: true };

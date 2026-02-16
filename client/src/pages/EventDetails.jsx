@@ -6,15 +6,18 @@ import AuthContext from '../context/AuthContext';
 const EventDetails = () => {
     const { id } = useParams();
     const [event, setEvent] = useState(null);
-    const { user } = useContext(AuthContext);
+    const { user, loading } = useContext(AuthContext);
     const navigate = useNavigate();
     const [message, setMessage] = useState('');
     const [isRegistering, setIsRegistering] = useState(false);
+    const [isRegistered, setIsRegistered] = useState(false);
+
+
 
     useEffect(() => {
         const fetchEvent = async () => {
             try {
-                const res = await axios.get(`http://localhost:5000/api/events/${id}`);
+                const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/events/${id}`);
                 setEvent(res.data);
             } catch (error) {
                 console.error(error);
@@ -22,6 +25,31 @@ const EventDetails = () => {
         };
         fetchEvent();
     }, [id]);
+
+    useEffect(() => {
+        const checkRegistration = async () => {
+            if (user) {
+                try {
+                    const token = localStorage.getItem('token');
+                    const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/events/my/registrations`, {
+                        headers: { Authorization: `Bearer ${token}` }
+                    });
+                    // Check if any registration matches the current event ID. 
+                    // Handling populated event object or just ID string just in case.
+                    const isReg = res.data.some(reg => {
+                        if (reg.event && typeof reg.event === 'object') {
+                            return reg.event._id === id;
+                        }
+                        return reg.event === id;
+                    });
+                    setIsRegistered(isReg);
+                } catch (error) {
+                    console.error("Error checking registration:", error);
+                }
+            }
+        };
+        checkRegistration();
+    }, [user, id]);
 
     const handleRegister = async () => {
         if (!user) {
@@ -32,10 +60,11 @@ const EventDetails = () => {
         try {
             setIsRegistering(true);
             const token = localStorage.getItem('token');
-            await axios.post(`http://localhost:5000/api/events/${id}/register`, {}, {
+            await axios.post(`${import.meta.env.VITE_API_URL}/api/events/${id}/register`, {}, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setMessage('Registration successful!');
+            setIsRegistered(true);
             setTimeout(() => setMessage(''), 3000);
         } catch (error) {
             setMessage(error.response?.data?.message || 'Registration failed');
@@ -44,7 +73,7 @@ const EventDetails = () => {
         }
     };
 
-    if (!event) return (
+    if (loading || !event) return (
         <div className="flex justify-center items-center h-screen bg-[#FAFAF9]">
             <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-600"></div>
         </div>
@@ -101,21 +130,25 @@ const EventDetails = () => {
                                     <h3 className="text-2xl font-bold mb-4 text-slate-900">Secure Your Spot</h3>
                                     <p className="text-slate-500 text-sm mb-8 leading-relaxed">Don't miss out on this amazing opportunity. Book now before seats run out!</p>
 
-                                    {message && (
+                                    {message ? (
                                         <div className={`mb-6 p-4 rounded-xl text-sm font-bold text-center flex items-center justify-center gap-2 ${message.includes('successful') ? 'bg-green-50 text-green-600 border border-green-100' : 'bg-red-50 text-red-600 border border-red-100'}`}>
                                             {message}
+                                        </div>
+                                    ) : isRegistered && (
+                                        <div className="mb-6 p-4 rounded-xl text-sm font-bold text-center flex items-center justify-center gap-2 bg-blue-50 text-blue-600 border border-blue-100">
+                                            You are already registered for this event
                                         </div>
                                     )}
 
                                     <button
                                         onClick={handleRegister}
-                                        disabled={isRegistering}
+                                        disabled={isRegistering || isRegistered}
                                         className={`w-full py-4 rounded-xl font-bold text-lg shadow-lg transition-all duration-300 transform hover:-translate-y-1 ${user
-                                                ? 'bg-slate-900 hover:bg-slate-800 text-white shadow-slate-900/20'
-                                                : 'bg-stone-200 hover:bg-stone-300 text-stone-600'
+                                            ? (isRegistered ? 'bg-stone-200 text-stone-500 cursor-not-allowed shadow-none' : 'bg-slate-900 hover:bg-slate-800 text-white shadow-slate-900/20')
+                                            : 'bg-stone-200 hover:bg-stone-300 text-stone-600'
                                             } ${isRegistering ? 'opacity-80 cursor-not-allowed' : ''}`}
                                     >
-                                        {isRegistering ? 'Processing...' : (user ? 'Register Now' : 'Login to Register')}
+                                        {isRegistering ? 'Processing...' : (isRegistered ? 'Registered' : (user ? 'Register Now' : 'Login to Register'))}
                                     </button>
                                 </div>
                             </div>
