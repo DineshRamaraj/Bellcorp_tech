@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 
 const EventDiscovery = () => {
     const [events, setEvents] = useState([]);
-    const [location, setLocation] = useState('');
+    const [searchTerm, setSearchTerm] = useState('');
     const [category, setCategory] = useState('');
     const [loading, setLoading] = useState(true);
 
@@ -12,7 +12,7 @@ const EventDiscovery = () => {
         try {
             setLoading(true);
             const params = {};
-            if (location) params.location = location;
+            if (searchTerm) params.search = searchTerm;
             if (category) params.category = category;
 
             const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/events`, { params });
@@ -26,8 +26,12 @@ const EventDiscovery = () => {
     };
 
     useEffect(() => {
-        fetchEvents();
-    }, [location, category]);
+        const delayDebounceFn = setTimeout(() => {
+            fetchEvents();
+        }, 500); // Debounce delay 500ms
+
+        return () => clearTimeout(delayDebounceFn);
+    }, [searchTerm, category]);
 
     return (
         <div className="pt-20 min-h-screen bg-[#FAFAF9] text-slate-800">
@@ -48,9 +52,9 @@ const EventDiscovery = () => {
                         <div className="flex-1">
                             <input
                                 type="text"
-                                placeholder="Search by Location..."
-                                value={location}
-                                onChange={(e) => setLocation(e.target.value)}
+                                placeholder="Search events, locations..."
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
                                 className="w-full bg-stone-50 border border-stone-200 text-slate-800 rounded-xl px-5 py-4 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all font-medium placeholder-slate-400"
                             />
                         </div>
@@ -99,6 +103,17 @@ const EventDiscovery = () => {
                                         <span className="inline-block bg-white/90 backdrop-blur-sm text-slate-800 text-xs font-bold px-3 py-1.5 rounded-full shadow-sm">
                                             {event.category}
                                         </span>
+                                    </div>
+                                    <div className="absolute top-4 right-4 z-10">
+                                        {new Date(event.date) < new Date() ? (
+                                            <span className="inline-block bg-stone-100/90 backdrop-blur-sm text-stone-500 text-xs font-bold px-3 py-1.5 rounded-full shadow-sm border border-stone-200">
+                                                Completed
+                                            </span>
+                                        ) : (
+                                            <span className="inline-block bg-green-100/90 backdrop-blur-sm text-green-700 text-xs font-bold px-3 py-1.5 rounded-full shadow-sm border border-green-200">
+                                                Open
+                                            </span>
+                                        )}
                                     </div>
                                 </div>
 

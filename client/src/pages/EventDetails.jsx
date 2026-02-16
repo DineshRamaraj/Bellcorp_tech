@@ -11,6 +11,7 @@ const EventDetails = () => {
     const [message, setMessage] = useState('');
     const [isRegistering, setIsRegistering] = useState(false);
     const [isRegistered, setIsRegistered] = useState(false);
+    const isPastEvent = event ? new Date(event.date) < new Date() : false;
 
 
 
@@ -142,13 +143,20 @@ const EventDetails = () => {
 
                                     <button
                                         onClick={handleRegister}
-                                        disabled={isRegistering || isRegistered}
-                                        className={`w-full py-4 rounded-xl font-bold text-lg shadow-lg transition-all duration-300 transform hover:-translate-y-1 ${user
-                                            ? (isRegistered ? 'bg-stone-200 text-stone-500 cursor-not-allowed shadow-none' : 'bg-slate-900 hover:bg-slate-800 text-white shadow-slate-900/20')
-                                            : 'bg-stone-200 hover:bg-stone-300 text-stone-600'
+                                        disabled={isRegistering || isRegistered || isPastEvent}
+                                        className={`w-full py-4 rounded-xl font-bold text-lg shadow-lg transition-all duration-300 transform hover:-translate-y-1 ${isPastEvent
+                                                ? 'bg-stone-200 text-stone-500 cursor-not-allowed shadow-none'
+                                                : user
+                                                    ? (isRegistered ? 'bg-stone-200 text-stone-500 cursor-not-allowed shadow-none' : 'bg-slate-900 hover:bg-slate-800 text-white shadow-slate-900/20')
+                                                    : 'bg-stone-200 hover:bg-stone-300 text-stone-600'
                                             } ${isRegistering ? 'opacity-80 cursor-not-allowed' : ''}`}
                                     >
-                                        {isRegistering ? 'Processing...' : (isRegistered ? 'Registered' : (user ? 'Register Now' : 'Login to Register'))}
+                                        {isRegistering
+                                            ? 'Processing...'
+                                            : isPastEvent
+                                                ? 'Event Ended'
+                                                : (isRegistered ? 'Registered' : (user ? 'Register Now' : 'Login to Register'))
+                                        }
                                     </button>
                                 </div>
                             </div>

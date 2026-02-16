@@ -24,8 +24,9 @@ const Dashboard = () => {
     }, []);
 
     const now = new Date();
-    const upcomingEvents = registrations.filter(r => new Date(r.event.date) > now);
-    const pastEvents = registrations.filter(r => new Date(r.event.date) <= now);
+    // Filter registrations, handling potential null events (e.g. deleted events)
+    const upcomingEvents = registrations.filter(r => r.event && new Date(r.event.date) > now);
+    const pastEvents = registrations.filter(r => r.event && new Date(r.event.date) <= now);
 
     const EventList = ({ title, items, emptyMessage }) => (
         <div className="mb-16">
